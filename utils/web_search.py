@@ -20,7 +20,7 @@ class JEPCOWebSearcher:
     """Real-time web searcher for JEPCO information"""
     
     def __init__(self):
-        """Initialize the web searcher"""
+        """Initialize the comprehensive web searcher"""
         self.base_urls = {
             'arabic': 'https://www.jepco.com.jo/ar/Home',
             'english': 'https://www.jepco.com.jo/en'
@@ -33,53 +33,247 @@ class JEPCOWebSearcher:
             'Connection': 'keep-alive',
             'Upgrade-Insecure-Requests': '1'
         }
-        print("🔍 JEPCO Web Searcher initialized")
+        
+        # Comprehensive page discovery - all possible JEPCO pages
+        self.all_page_paths = {
+            'arabic': [
+                '/ar/Home',
+                '/ar/Home/AboutUs',
+                '/ar/Home/Vision',
+                '/ar/Home/Mission', 
+                '/ar/Home/History',
+                '/ar/Home/OrganizationalChart',
+                '/ar/Home/CustomerService',
+                '/ar/Home/ServiceStepPage',
+                '/ar/Home/ElectronicServices',
+                '/ar/Home/BillInquiry',
+                '/ar/Home/PayBill',
+                '/ar/Home/NewConnection',
+                '/ar/Home/TransferSubscription',
+                '/ar/Home/CancelSubscription',
+                '/ar/Home/ComplaintSubmission',
+                '/ar/Home/Tariffs',
+                '/ar/Home/ElectricityTariffs',
+                '/ar/Home/Pricing',
+                '/ar/Home/RateSchedule',
+                '/ar/Home/ContactUs',
+                '/ar/Home/EmergencyNumbers',
+                '/ar/Home/ServiceAreas',
+                '/ar/Home/OfficeLocations',
+                '/ar/Home/WorkingHours',
+                '/ar/Home/News',
+                '/ar/Home/Announcements',
+                '/ar/Home/Tenders',
+                '/ar/Home/Careers',
+                '/ar/Home/Safety',
+                '/ar/Home/PowerOutages',
+                '/ar/Home/Maintenance',
+                '/ar/Home/Projects',
+                '/ar/Home/FAQ',
+                '/ar/Home/Terms',
+                '/ar/Home/Privacy',
+                '/ar/Home/SiteMap'
+            ],
+            'english': [
+                '/en/Home',
+                '/en/Home/AboutUs',
+                '/en/Home/Vision',
+                '/en/Home/Mission',
+                '/en/Home/History',
+                '/en/Home/OrganizationalChart',
+                '/en/Home/CustomerService',
+                '/en/Home/ServiceStepPage',
+                '/en/Home/ElectronicServices',
+                '/en/Home/BillInquiry',
+                '/en/Home/PayBill',
+                '/en/Home/NewConnection',
+                '/en/Home/TransferSubscription',
+                '/en/Home/CancelSubscription',
+                '/en/Home/ComplaintSubmission',
+                '/en/Home/Tariffs',
+                '/en/Home/ElectricityTariffs',
+                '/en/Home/Pricing',
+                '/en/Home/RateSchedule',
+                '/en/Home/ContactUs',
+                '/en/Home/EmergencyNumbers',
+                '/en/Home/ServiceAreas',
+                '/en/Home/OfficeLocations',
+                '/en/Home/WorkingHours',
+                '/en/Home/News',
+                '/en/Home/Announcements',
+                '/en/Home/Tenders',
+                '/en/Home/Careers',
+                '/en/Home/Safety',
+                '/en/Home/PowerOutages',
+                '/en/Home/Maintenance',
+                '/en/Home/Projects',
+                '/en/Home/FAQ',
+                '/en/Home/Terms',
+                '/en/Home/Privacy',
+                '/en/Home/SiteMap'
+            ]
+        }
+        
+        print("🔍 JEPCO Comprehensive Web Searcher initialized")
+        print(f"📄 Ready to search {len(self.all_page_paths['arabic'])} Arabic pages")
+        print(f"📄 Ready to search {len(self.all_page_paths['english'])} English pages")
     
     def search_jepco_realtime(self, query: str, language: str = 'arabic') -> Dict:
         """
-        Search JEPCO website in real-time based on query
+        Comprehensive search across ALL JEPCO website pages
         """
-        print(f"🔍 Searching JEPCO website for: {query}")
+        print(f"🔍 Comprehensive JEPCO website search for: {query}")
         
         results = {
             'query': query,
             'language': language,
             'results': [],
+            'pages_searched': 0,
+            'successful_pages': 0,
             'timestamp': time.strftime("%Y-%m-%d %H:%M:%S"),
-            'source': 'live_search'
+            'source': 'comprehensive_search'
         }
         
-        # Determine which language site to search
-        base_url = self.base_urls.get(language, self.base_urls['arabic'])
+        # Get all possible page paths for the language
+        page_paths = self.all_page_paths.get(language, self.all_page_paths['arabic'])
+        base_domain = 'https://www.jepco.com.jo'
         
-        try:
-            # Search main page
-            main_page_results = self._search_page(base_url, query, language)
-            if main_page_results:
-                results['results'].extend(main_page_results)
-            
-            # Search specific service pages based on query keywords
-            service_urls = self._get_relevant_service_urls(query, language)
-            for service_url in service_urls:
-                try:
-                    service_results = self._search_page(service_url, query, language)
-                    if service_results:
-                        results['results'].extend(service_results)
-                    time.sleep(1)  # Be respectful to the server
-                except Exception as e:
-                    print(f"⚠️ Error searching service page {service_url}: {str(e)}")
-                    continue
-            
-            print(f"✅ Found {len(results['results'])} relevant results")
-            
-        except Exception as e:
-            print(f"❌ Error in real-time search: {str(e)}")
-            results['error'] = str(e)
+        # First, get smart page selection based on query
+        priority_pages = self._get_priority_pages(query, language)
+        
+        # Search priority pages first
+        print(f"🎯 Searching {len(priority_pages)} priority pages...")
+        for page_path in priority_pages:
+            try:
+                full_url = base_domain + page_path
+                page_results = self._search_page(full_url, query, language)
+                results['pages_searched'] += 1
+                
+                if page_results:
+                    results['results'].extend(page_results)
+                    results['successful_pages'] += 1
+                    print(f"✅ Found {len(page_results)} results on {page_path}")
+                
+                time.sleep(0.5)  # Be respectful
+                
+            except Exception as e:
+                print(f"⚠️ Error searching {page_path}: {str(e)}")
+                continue
+        
+        # If we have good results from priority pages, return them
+        if len(results['results']) >= 10:
+            print(f"✅ Found sufficient results ({len(results['results'])}) from priority pages")
+            return results
+        
+        # Otherwise, search additional pages
+        print(f"🔍 Expanding search to more pages...")
+        remaining_pages = [p for p in page_paths if p not in priority_pages]
+        
+        for page_path in remaining_pages[:15]:  # Limit to avoid overloading
+            try:
+                full_url = base_domain + page_path
+                page_results = self._search_page(full_url, query, language)
+                results['pages_searched'] += 1
+                
+                if page_results:
+                    results['results'].extend(page_results)
+                    results['successful_pages'] += 1
+                    print(f"✅ Found {len(page_results)} results on {page_path}")
+                
+                time.sleep(0.5)
+                
+                # Stop if we have enough results
+                if len(results['results']) >= 20:
+                    break
+                
+            except Exception as e:
+                print(f"⚠️ Error searching {page_path}: {str(e)}")
+                continue
+        
+        print(f"✅ Comprehensive search complete: {len(results['results'])} total results from {results['successful_pages']}/{results['pages_searched']} pages")
         
         return results
     
+    def _get_priority_pages(self, query: str, language: str) -> List[str]:
+        """Get priority pages to search based on query content"""
+        
+        query_lower = query.lower()
+        priority_pages = []
+        
+        # Always include home page
+        home_path = '/ar/Home' if language == 'arabic' else '/en/Home'
+        priority_pages.append(home_path)
+        
+        # Categorize query and add relevant pages
+        page_categories = {
+            # Billing and payments
+            'billing': {
+                'keywords': ['فاتورة', 'دفع', 'تسديد', 'حساب', 'bill', 'payment', 'pay', 'account'],
+                'pages': ['/Home/BillInquiry', '/Home/PayBill', '/Home/ElectronicServices', '/Home/Tariffs', '/Home/Pricing']
+            },
+            # Services
+            'services': {
+                'keywords': ['خدمة', 'خدمات', 'طلب', 'اشتراك', 'service', 'request', 'subscription'],
+                'pages': ['/Home/CustomerService', '/Home/ServiceStepPage', '/Home/ElectronicServices', '/Home/NewConnection']
+            },
+            # Contact and support
+            'contact': {
+                'keywords': ['اتصال', 'تواصل', 'هاتف', 'رقم', 'contact', 'phone', 'call', 'support'],
+                'pages': ['/Home/ContactUs', '/Home/EmergencyNumbers', '/Home/CustomerService', '/Home/OfficeLocations']
+            },
+            # About company
+            'about': {
+                'keywords': ['عن', 'شركة', 'جيبكو', 'تاريخ', 'about', 'company', 'jepco', 'history'],
+                'pages': ['/Home/AboutUs', '/Home/Vision', '/Home/Mission', '/Home/History', '/Home/OrganizationalChart']
+            },
+            # Technical and maintenance
+            'technical': {
+                'keywords': ['انقطاع', 'عطل', 'صيانة', 'مشروع', 'outage', 'fault', 'maintenance', 'project'],
+                'pages': ['/Home/PowerOutages', '/Home/Maintenance', '/Home/Projects', '/Home/Safety']
+            },
+            # News and announcements
+            'news': {
+                'keywords': ['أخبار', 'إعلان', 'مناقصة', 'وظيفة', 'news', 'announcement', 'tender', 'career'],
+                'pages': ['/Home/News', '/Home/Announcements', '/Home/Tenders', '/Home/Careers']
+            },
+            # Areas and locations
+            'locations': {
+                'keywords': ['منطقة', 'موقع', 'عنوان', 'مكتب', 'area', 'location', 'address', 'office'],
+                'pages': ['/Home/ServiceAreas', '/Home/OfficeLocations', '/Home/WorkingHours']
+            },
+            # Help and FAQ
+            'help': {
+                'keywords': ['مساعدة', 'سؤال', 'شكوى', 'help', 'question', 'faq', 'complaint'],
+                'pages': ['/Home/FAQ', '/Home/ComplaintSubmission', '/Home/CustomerService']
+            }
+        }
+        
+        # Add pages based on query content
+        for category, info in page_categories.items():
+            if any(keyword in query_lower for keyword in info['keywords']):
+                for page in info['pages']:
+                    full_path = f"/{language[0:2]}{page}" if language == 'english' else f"/ar{page}"
+                    if full_path not in priority_pages:
+                        priority_pages.append(full_path)
+        
+        # If no specific category found, add general service pages
+        if len(priority_pages) == 1:  # Only home page
+            general_pages = [
+                '/Home/CustomerService',
+                '/Home/ElectronicServices', 
+                '/Home/ServiceStepPage',
+                '/Home/ContactUs',
+                '/Home/FAQ'
+            ]
+            for page in general_pages:
+                full_path = f"/{language[0:2]}{page}" if language == 'english' else f"/ar{page}"
+                priority_pages.append(full_path)
+        
+        print(f"🎯 Selected {len(priority_pages)} priority pages for query: {query}")
+        return priority_pages[:10]  # Limit to top 10 priority pages
+    
     def _search_page(self, url: str, query: str, language: str) -> List[Dict]:
-        """Search a specific page for relevant information"""
+        """Comprehensive search of a specific page for ALL relevant information"""
         
         try:
             response = requests.get(url, headers=self.headers, timeout=10, verify=False)
@@ -87,48 +281,156 @@ class JEPCOWebSearcher:
             
             soup = BeautifulSoup(response.content, 'html.parser')
             
-            # Remove script and style elements
-            for script in soup(["script", "style", "nav", "footer"]):
+            # Remove script and style elements but keep navigation for links
+            for script in soup(["script", "style"]):
                 script.decompose()
             
-            # Extract relevant content based on query
-            relevant_content = []
+            # Extract ALL content types
+            all_content = []
             query_keywords = self._extract_keywords(query, language)
             
-            # Search in different sections
-            sections_to_search = [
-                soup.find_all(['div', 'section', 'article'], class_=lambda x: x and any(
-                    keyword in x.lower() for keyword in ['content', 'main', 'service', 'info', 'text']
-                )),
-                soup.find_all(['p', 'h1', 'h2', 'h3', 'h4', 'li']),
-                soup.find_all(['td', 'th'])  # Table content
+            # 1. Extract ALL text content with structure
+            content_elements = [
+                # Headers (high priority)
+                {'elements': soup.find_all(['h1', 'h2', 'h3', 'h4', 'h5', 'h6']), 'priority': 10, 'type': 'header'},
+                # Main content areas
+                {'elements': soup.find_all(['div', 'section', 'article', 'main']), 'priority': 8, 'type': 'content'},
+                # Paragraphs and text
+                {'elements': soup.find_all(['p', 'span', 'li']), 'priority': 6, 'type': 'text'},
+                # Tables (important for structured data)
+                {'elements': soup.find_all(['table', 'tr', 'td', 'th']), 'priority': 9, 'type': 'table'},
+                # Links (for navigation info)
+                {'elements': soup.find_all('a'), 'priority': 4, 'type': 'link'},
+                # Forms (for service information)
+                {'elements': soup.find_all(['form', 'input', 'label']), 'priority': 7, 'type': 'form'}
             ]
             
-            for section_group in sections_to_search:
-                for element in section_group:
+            for content_group in content_elements:
+                for element in content_group['elements']:
                     text = element.get_text(separator=' ', strip=True)
-                    if text and len(text) > 20:  # Only meaningful content
+                    
+                    # Skip very short or empty content
+                    if not text or len(text) < 10:
+                        continue
+                    
+                    # Calculate relevance score
+                    text_lower = text.lower()
+                    query_lower = query.lower()
+                    
+                    # Multiple scoring methods
+                    keyword_score = sum(1 for keyword in query_keywords if keyword in text_lower)
+                    direct_match_score = 5 if query_lower in text_lower else 0
+                    priority_score = content_group['priority']
+                    
+                    total_score = keyword_score + direct_match_score + priority_score
+                    
+                    # Include content if it has any relevance or if it's important structural content
+                    if total_score > 0 or content_group['type'] in ['header', 'table']:
                         
-                        # Check if text contains query-relevant keywords
-                        text_lower = text.lower()
-                        relevance_score = sum(1 for keyword in query_keywords if keyword in text_lower)
+                        # Get additional context
+                        parent_text = ""
+                        if element.parent and element.parent.name not in ['html', 'body']:
+                            parent_text = element.parent.get_text(separator=' ', strip=True)[:200]
                         
-                        if relevance_score > 0:
-                            relevant_content.append({
-                                'text': text[:800],  # Limit length
-                                'relevance_score': relevance_score,
-                                'source_url': url,
-                                'element_type': element.name,
-                                'timestamp': time.strftime("%Y-%m-%d %H:%M:%S")
-                            })
+                        all_content.append({
+                            'text': text[:1000],  # Increased length for more context
+                            'relevance_score': total_score,
+                            'source_url': url,
+                            'element_type': element.name,
+                            'content_type': content_group['type'],
+                            'priority': content_group['priority'],
+                            'parent_context': parent_text,
+                            'timestamp': time.strftime("%Y-%m-%d %H:%M:%S"),
+                            'page_title': soup.title.string if soup.title else url.split('/')[-1]
+                        })
             
-            # Sort by relevance and return top results
-            relevant_content.sort(key=lambda x: x['relevance_score'], reverse=True)
-            return relevant_content[:5]  # Top 5 most relevant
+            # 2. Extract specific structured data
+            structured_data = self._extract_structured_data(soup, url)
+            all_content.extend(structured_data)
+            
+            # 3. Sort by relevance and return comprehensive results
+            all_content.sort(key=lambda x: x['relevance_score'], reverse=True)
+            
+            # Return more results for comprehensive coverage
+            return all_content[:15] if all_content else []
             
         except Exception as e:
             print(f"❌ Error searching page {url}: {str(e)}")
             return []
+    
+    def _extract_structured_data(self, soup: BeautifulSoup, url: str) -> List[Dict]:
+        """Extract specific structured data like contact info, prices, schedules"""
+        
+        structured_data = []
+        
+        # Extract contact information
+        contact_patterns = [
+            r'\b1\d{2}\b',  # 3-digit numbers like 116
+            r'\b0\d{1,2}[-\s]?\d{7,8}\b',  # Phone numbers
+            r'[\w\.-]+@[\w\.-]+\.\w+',  # Email addresses
+        ]
+        
+        page_text = soup.get_text()
+        for pattern in contact_patterns:
+            matches = re.findall(pattern, page_text)
+            for match in matches:
+                structured_data.append({
+                    'text': f"Contact Information: {match}",
+                    'relevance_score': 15,  # High priority for contact info
+                    'source_url': url,
+                    'element_type': 'contact',
+                    'content_type': 'structured',
+                    'priority': 15,
+                    'parent_context': '',
+                    'timestamp': time.strftime("%Y-%m-%d %H:%M:%S"),
+                    'page_title': soup.title.string if soup.title else url.split('/')[-1]
+                })
+        
+        # Extract pricing information
+        pricing_patterns = [
+            r'\d+(?:\.\d+)?\s*(?:فلس|fils)',
+            r'\d+(?:\.\d+)?\s*(?:دينار|JOD)',
+            r'\d+(?:\.\d+)?\s*(?:كيلو\s*واط|kWh)',
+        ]
+        
+        for pattern in pricing_patterns:
+            matches = re.findall(pattern, page_text, re.IGNORECASE)
+            for match in matches:
+                structured_data.append({
+                    'text': f"Pricing Information: {match}",
+                    'relevance_score': 12,
+                    'source_url': url,
+                    'element_type': 'pricing',
+                    'content_type': 'structured',
+                    'priority': 12,
+                    'parent_context': '',
+                    'timestamp': time.strftime("%Y-%m-%d %H:%M:%S"),
+                    'page_title': soup.title.string if soup.title else url.split('/')[-1]
+                })
+        
+        # Extract working hours
+        hours_patterns = [
+            r'\d{1,2}:\d{2}\s*(?:AM|PM|صباحاً|مساءً)',
+            r'من\s*\d{1,2}:\d{2}\s*إلى\s*\d{1,2}:\d{2}',
+            r'from\s*\d{1,2}:\d{2}\s*to\s*\d{1,2}:\d{2}',
+        ]
+        
+        for pattern in hours_patterns:
+            matches = re.findall(pattern, page_text, re.IGNORECASE)
+            for match in matches:
+                structured_data.append({
+                    'text': f"Working Hours: {match}",
+                    'relevance_score': 10,
+                    'source_url': url,
+                    'element_type': 'hours',
+                    'content_type': 'structured',
+                    'priority': 10,
+                    'parent_context': '',
+                    'timestamp': time.strftime("%Y-%m-%d %H:%M:%S"),
+                    'page_title': soup.title.string if soup.title else url.split('/')[-1]
+                })
+        
+        return structured_data
     
     def _extract_keywords(self, query: str, language: str) -> List[str]:
         """Extract search keywords from query based on language"""
@@ -502,8 +804,8 @@ class JEPCOWebSearcher:
 # Utility functions for integration
 def search_jepco_website(query: str, language: str = 'arabic') -> str:
     """
-    Quick search function for integration with chatbot
-    Returns formatted results as string
+    Comprehensive search function for integration with chatbot
+    Returns formatted results with complete website information
     """
     
     searcher = JEPCOWebSearcher()
@@ -515,14 +817,68 @@ def search_jepco_website(query: str, language: str = 'arabic') -> str:
     if not results['results']:
         return "No current information found on JEPCO website for your query."
     
-    # Format results
+    # Format comprehensive results
     formatted_results = []
-    formatted_results.append(f"🔍 Live information from JEPCO website ({results['timestamp']}):\n")
     
-    for i, result in enumerate(results['results'][:3], 1):  # Top 3 results
-        formatted_results.append(f"{i}. {result['text'][:300]}...")
-        if result.get('source_url'):
-            formatted_results.append(f"   Source: {result['source_url']}\n")
+    # Header with search statistics
+    search_stats = f"🔍 Comprehensive JEPCO Website Search Results ({results['timestamp']})"
+    if 'pages_searched' in results:
+        search_stats += f"\n📊 Searched {results['successful_pages']}/{results['pages_searched']} pages"
+    formatted_results.append(search_stats + "\n")
+    
+    # Group results by content type for better organization
+    content_groups = {
+        'contact': [],
+        'pricing': [], 
+        'header': [],
+        'table': [],
+        'content': [],
+        'other': []
+    }
+    
+    for result in results['results'][:20]:  # More results for comprehensive coverage
+        content_type = result.get('content_type', 'other')
+        if content_type not in content_groups:
+            content_type = 'other'
+        content_groups[content_type].append(result)
+    
+    # Format results by priority groups
+    priority_groups = [
+        ('📞 Contact Information:', content_groups['contact']),
+        ('💰 Pricing Information:', content_groups['pricing']),
+        ('📋 Key Information:', content_groups['header']),
+        ('📊 Structured Data:', content_groups['table']),
+        ('📄 General Content:', content_groups['content'][:5]),  # Limit general content
+        ('🔗 Additional Information:', content_groups['other'][:3])  # Limit other content
+    ]
+    
+    for group_title, group_results in priority_groups:
+        if group_results:
+            formatted_results.append(group_title)
+            for i, result in enumerate(group_results[:5], 1):  # Top 5 per group
+                # Format based on content type
+                text = result['text']
+                page_title = result.get('page_title', 'JEPCO Page')
+                
+                if result.get('content_type') == 'structured':
+                    formatted_results.append(f"• {text}")
+                else:
+                    # Truncate long content but keep important info
+                    display_text = text[:400] + "..." if len(text) > 400 else text
+                    formatted_results.append(f"• {display_text}")
+                
+                # Add source info for transparency
+                if result.get('source_url'):
+                    page_name = result['source_url'].split('/')[-1] or 'Home'
+                    formatted_results.append(f"  📍 Source: {page_name}")
+            
+            formatted_results.append("")  # Add spacing between groups
+    
+    # Add footer with search summary
+    total_results = len(results['results'])
+    formatted_results.append(f"📈 Total Results Found: {total_results}")
+    formatted_results.append(f"🌐 All information sourced from official JEPCO website")
+    formatted_results.append(f"⏰ Search completed at: {results['timestamp']}")
     
     return "\n".join(formatted_results)
 
