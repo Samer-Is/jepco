@@ -28,9 +28,6 @@ def initialize_session_state():
     if "chatbot" not in st.session_state:
         st.session_state.chatbot = None
     
-    if "selected_language" not in st.session_state:
-        st.session_state.selected_language = "english"
-    
     if "chatbot_initialized" not in st.session_state:
         st.session_state.chatbot_initialized = False
 
@@ -65,95 +62,40 @@ def display_header():
 
 
 def setup_sidebar():
-    """Setup sidebar with language selection and information"""
+    """Setup sidebar with information (no language selector)"""
     
     with st.sidebar:
-        st.header("⚙️ Settings")
+        st.header("ℹ️ معلومات | Information")
         
-        # Language selector
-        language_options = {
-            "english": "English",
-            "arabic": "العربية الفصحى", 
-            "jordanian": "العربية الأردنية"
-        }
+        # Remove language selector - automatic detection only
+        # Set default language to English for initial welcome message
+        if "selected_language" not in st.session_state:
+            st.session_state.selected_language = "english"
         
-        selected_lang = st.selectbox(
-            "Select Language / اختر اللغة",
-            options=list(language_options.keys()),
-            format_func=lambda x: language_options[x],
-            index=0,
-            key="language_selector"
-        )
+        # Bilingual information section
+        st.markdown("""
+        **About this service | حول هذه الخدمة:**
+        - Official JEPCO customer support | خدمة عملاء جيبكو الرسمية
+        - AI-powered assistance 24/7 | مساعدة بالذكاء الاصطناعي 24 ساعة
+        - Information from JEPCO website | معلومات من موقع جيبكو
+        - Automatic language detection | كشف اللغة التلقائي
         
-        # Update session state if language changed
-        if selected_lang != st.session_state.selected_language:
-            st.session_state.selected_language = selected_lang
-            # Add welcome message in new language
-            if st.session_state.messages:
-                welcome_msg = get_welcome_message(selected_lang)
-                st.session_state.messages.append({
-                    "role": "assistant",
-                    "content": welcome_msg,
-                    "timestamp": datetime.now(),
-                    "language": selected_lang
-                })
-            st.rerun()
-        
-        st.divider()
-        
-        # Information section
-        st.header("ℹ️ Information")
-        
-        if selected_lang == "english":
-            st.markdown("""
-            **About this service:**
-            - Official JEPCO customer support
-            - AI-powered assistance 24/7
-            - Information from JEPCO website
-            - Multi-language support
-            
-            **For urgent issues:**
-            - Contact JEPCO directly
-            - Visit nearest JEPCO office
-            - Use official JEPCO hotline
-            """)
-        elif selected_lang == "arabic":
-            st.markdown("""
-            **حول هذه الخدمة:**
-            - خدمة عملاء جيبكو الرسمية
-            - مساعدة بالذكاء الاصطناعي 24/7
-            - معلومات من موقع جيبكو
-            - دعم متعدد اللغات
-            
-            **للقضايا العاجلة:**
-            - اتصل بجيبكو مباشرة
-            - زيارة أقرب مكتب جيبكو
-            - استخدام الخط الساخن لجيبكو
-            """)
-        else:  # jordanian
-            st.markdown("""
-            **عن هاي الخدمة:**
-            - خدمة عملاء جيبكو الرسمية
-            - مساعدة بالذكاء الاصطناعي 24 ساعة
-            - معلومات من موقع جيبكو
-            - دعم أكتر من لغة
-            
-            **للأمور العاجلة:**
-            - اتصل مع جيبكو مباشرة
-            - روح على أقرب مكتب جيبكو
-            - استعمل الخط الساخن لجيبكو
-            """)
+        **For urgent issues | للقضايا العاجلة:**
+        - Contact JEPCO directly | اتصل بجيبكو مباشرة
+        - Hotline: **116** | الخط الساخن: **116**
+        - Visit nearest JEPCO office | زيارة أقرب مكتب جيبكو
+        """)
         
         st.divider()
         
         # Clear chat button
-        if st.button("🗑️ Clear Chat / مسح المحادثة"):
+        if st.button("🗑️ Clear Chat | مسح المحادثة"):
             st.session_state.messages = []
             st.session_state.messages.append({
                 "role": "assistant",
-                "content": get_welcome_message(st.session_state.selected_language),
+                "content": get_welcome_message("english"),  # Default welcome in English
                 "timestamp": datetime.now(),
-                "language": st.session_state.selected_language
+                "language": "english"
             })
             st.rerun()
 
@@ -167,17 +109,25 @@ def initialize_chatbot():
             
             if st.session_state.chatbot:
                 st.session_state.chatbot_initialized = True
-                # Add welcome message
-                welcome_msg = get_welcome_message(st.session_state.selected_language)
+                # Add welcome message in English by default
+                welcome_msg = get_welcome_message("english")
                 st.session_state.messages.append({
                     "role": "assistant",
                     "content": welcome_msg,
                     "timestamp": datetime.now(),
-                    "language": st.session_state.selected_language
+                    "language": "english"
                 })
                 st.success("✅ JEPCO Customer Support is ready!")
             else:
-                st.error("❌ Failed to initialize customer support. Please check your configuration.")
+                st.error("❌ Failed to initialize customer support. Please check your OpenAI API key configuration.")
+                st.info("""
+                **To fix this issue:**
+                1. Make sure you have set the `OPENAI_API_KEY` in your environment
+                2. For Streamlit Cloud: Add the API key to your app secrets
+                3. For local development: Create a `.env` file with your API key
+                
+                **Without the API key, the chatbot cannot function.**
+                """)
                 st.stop()
 
 
@@ -211,8 +161,8 @@ def display_chat_messages():
 def handle_user_input():
     """Handle user input and generate AI response"""
     
-    # Get user input
-    user_input = st.chat_input("Type your message here... / اكتب رسالتك هنا...")
+    # Get user input with bilingual placeholder
+    user_input = st.chat_input("Type your message here | اكتب رسالتك هنا")
     
     if user_input:
         # Detect language of user input
@@ -290,16 +240,29 @@ def check_environment():
     """Check if required environment variables are set"""
     
     if not os.getenv('OPENAI_API_KEY'):
-        st.error("""
-        ❌ **Missing OpenAI API Key**
+        st.error("❌ **Missing OpenAI API Key**")
         
-        Please set the OPENAI_API_KEY environment variable or add it to Streamlit secrets.
+        col1, col2 = st.columns(2)
         
-        For Streamlit Cloud deployment:
-        1. Go to your app settings
-        2. Add OPENAI_API_KEY to secrets
-        3. Restart the app
-        """)
+        with col1:
+            st.markdown("""
+            **For Streamlit Cloud:**
+            1. Go to your app settings ⚙️
+            2. Click on "Secrets" 
+            3. Add: `OPENAI_API_KEY = "your_key_here"`
+            4. Restart the app
+            """)
+        
+        with col2:
+            st.markdown("""
+            **For Local Development:**
+            1. Create a `.env` file
+            2. Add: `OPENAI_API_KEY=your_key_here`
+            3. Restart the app
+            """)
+        
+        st.info("💡 **Get your API key from:** https://platform.openai.com/api-keys")
+        st.warning("⚠️ **The chatbot cannot function without a valid OpenAI API key.**")
         st.stop()
 
 
