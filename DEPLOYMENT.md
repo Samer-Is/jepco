@@ -130,14 +130,19 @@ streamlit run app.py
 1. **"Missing OpenAI API Key" Error**
    - Solution: Ensure `OPENAI_API_KEY` is set in Streamlit secrets
 
-2. **Arabic Text Not Displaying Correctly**
+2. **Deployment Build Failure (lxml dependency)**
+   - Error: "Please make sure the libxml2 and libxslt development packages are installed"
+   - Solution: ✅ Already fixed - lxml removed from requirements.txt
+   - Note: App uses built-in html.parser instead
+
+3. **Arabic Text Not Displaying Correctly**
    - Solution: Browser should support RTL text (most modern browsers do)
 
-3. **App Loading Slowly**
+4. **App Loading Slowly**
    - Cause: First-time content scraping or API initialization
    - Solution: Wait for initialization to complete
 
-4. **Empty Responses**
+5. **Empty Responses**
    - Cause: OpenAI API issues or rate limiting
    - Solution: Check API key validity and usage limits
 
