@@ -19,38 +19,70 @@ class JEPCOChatbot:
     """JEPCO Customer Support Chatbot using GPT-4o"""
     
     def __init__(self):
-        """Initialize the chatbot with OpenAI API key"""
+        """Initialize JEPCO chatbot with comprehensive knowledge base"""
         
-        # Get API key from environment variable
+        load_dotenv(override=True)  # Ensure .env overrides system environment variables
+        
+        # Initialize OpenAI client
         api_key = os.getenv('OPENAI_API_KEY')
         if not api_key:
             raise ValueError("OPENAI_API_KEY environment variable is required")
         
-        # Initialize OpenAI client
         self.client = openai.OpenAI(api_key=api_key)
         
-        # Load JEPCO content
-        self.jepco_content = self.load_jepco_content()
+        # Load comprehensive JEPCO content
+        self.jepco_content = self._load_comprehensive_jepco_content()
         
         # Initialize web searcher for real-time information
         self.web_searcher = JEPCOWebSearcher()
         
-        print("✅ JEPCO Chatbot initialized successfully")
+        print("✅ JEPCO Chatbot initialized with comprehensive knowledge base")
     
-    def load_jepco_content(self) -> Dict:
-        """Load JEPCO content from JSON file"""
+    def _load_comprehensive_jepco_content(self) -> Dict:
+        """Load comprehensive JEPCO content from JSON file"""
         
         try:
             with open('data/jepco_content.json', 'r', encoding='utf-8') as f:
                 content = json.load(f)
-                print("✅ JEPCO content loaded successfully")
-                return content
+                
+                # Check if it's comprehensive content
+                if 'extraction_metadata' in content:
+                    pages_scraped = len(content['extraction_metadata'].get('pages_scraped', []))
+                    content_sections = content['extraction_metadata'].get('total_content_sections', 0)
+                    print(f"✅ Comprehensive JEPCO content loaded successfully")
+                    print(f"📄 {pages_scraped} pages | 📋 {content_sections} sections")
+                    return content
+                else:
+                    # Legacy content format
+                    print("⚠️  Legacy content format detected. Using as-is.")
+                    return content
+                    
         except FileNotFoundError:
-            print("⚠️  JEPCO content file not found. Please run scraper first.")
-            return {}
+            print("⚠️  JEPCO content file not found. Running comprehensive extraction...")
+            return self._extract_and_save_comprehensive_content()
         except Exception as e:
             print(f"❌ Error loading JEPCO content: {str(e)}")
-            return {}
+            return self._create_fallback_content()
+    
+    def _extract_and_save_comprehensive_content(self) -> Dict:
+        """Extract comprehensive content if not available"""
+        
+        try:
+            from utils.scraper import scrape_complete_jepco_website, save_complete_content_to_json
+            
+            print("🚀 Starting comprehensive JEPCO website extraction...")
+            comprehensive_content = scrape_complete_jepco_website()
+            save_complete_content_to_json(comprehensive_content)
+            
+            return comprehensive_content
+            
+        except Exception as e:
+            print(f"❌ Error during comprehensive extraction: {str(e)}")
+            return self._create_fallback_content()
+    
+    def load_jepco_content(self) -> Dict:
+        """Legacy method - redirects to comprehensive loader"""
+        return self._load_comprehensive_jepco_content()
     
     def find_relevant_content(self, query: str, language: str = 'english') -> str:
         """
@@ -58,7 +90,7 @@ class JEPCOChatbot:
         Return: Most relevant content snippets
         """
         
-        print(f"🔍 Searching for: {query} (Language: {language})")
+        print(f"🔍 Comprehensive search for: {query} (Language: {language})")
         
         # Check if this is a calculation/pricing query
         if self._is_calculation_query(query):
@@ -70,16 +102,34 @@ class JEPCOChatbot:
             except Exception as e:
                 print(f"⚠️ Calculation failed: {str(e)}")
         
-        # First, try real-time web search
+        # First, search comprehensive knowledge base
+        knowledge_base_results = self._search_comprehensive_knowledge_base(query, language)
+        
+        # Then, try real-time web search for current information
+        web_search_results = ""
         try:
             web_results = search_jepco_website(query, language)
             if web_results and "Unable to search website" not in web_results and "No current information found" not in web_results:
                 print("✅ Using real-time web search results")
-                return f"🌐 Current information from JEPCO website:\n\n{web_results}"
+                web_search_results = web_results
         except Exception as e:
             print(f"⚠️ Web search failed: {str(e)}")
         
-        # Fallback to static content if web search fails
+        # Combine comprehensive knowledge base with real-time results
+        combined_results = []
+        
+        if knowledge_base_results:
+            combined_results.append("📚 From JEPCO Comprehensive Knowledge Base:")
+            combined_results.append(knowledge_base_results)
+        
+        if web_search_results:
+            combined_results.append("\n🌐 Current Information from JEPCO Website:")
+            combined_results.append(web_search_results)
+        
+        if combined_results:
+            return "\n".join(combined_results)
+        
+        # Fallback to static content if everything fails
         print("📁 Using static content as fallback")
         
         if not self.jepco_content:
@@ -389,6 +439,75 @@ Instructions:
         except Exception as e:
             print(f"❌ OpenAI API connection failed: {str(e)}")
             return False
+    
+    def _search_comprehensive_knowledge_base(self, query: str, language: str) -> str:
+        """Search through the comprehensive knowledge base"""
+        
+        if not self.jepco_content or 'extraction_metadata' not in self.jepco_content:
+            return ""
+        
+        # Determine language key
+        lang_key = 'arabic' if language in ['arabic', 'jordanian'] else 'english'
+        
+        if lang_key not in self.jepco_content:
+            return ""
+        
+        query_lower = query.lower()
+        relevant_content = []
+        
+        # Search through all content categories
+        content_categories = [
+            ('company_info', 'Company Information'),
+            ('services', 'Customer Services'),
+            ('billing', 'Billing Information'),
+            ('technical_services', 'Technical Services'),
+            ('contact_info', 'Contact Information'),
+            ('safety_regulations', 'Safety & Regulations'),
+            ('faq', 'Frequently Asked Questions'),
+            ('additional_content', 'Additional Information')
+        ]
+        
+        for category_key, category_name in content_categories:
+            if category_key in self.jepco_content[lang_key]:
+                category_content = self.jepco_content[lang_key][category_key]
+                
+                # Search through category content
+                category_matches = self._search_category_content(query_lower, category_content)
+                
+                if category_matches:
+                    relevant_content.append(f"\n📋 {category_name}:")
+                    relevant_content.extend(category_matches[:2])  # Top 2 matches per category
+        
+        return "\n".join(relevant_content) if relevant_content else ""
+    
+    def _search_category_content(self, query_lower: str, category_content: Dict) -> List[str]:
+        """Search within a specific content category"""
+        
+        matches = []
+        
+        if not isinstance(category_content, dict):
+            return matches
+        
+        for key, value in category_content.items():
+            if isinstance(value, str):
+                if any(word in value.lower() for word in query_lower.split() if len(word) > 2):
+                    matches.append(f"• {value[:300]}...")
+            elif isinstance(value, list):
+                for item in value:
+                    if isinstance(item, str):
+                        if any(word in item.lower() for word in query_lower.split() if len(word) > 2):
+                            matches.append(f"• {item[:300]}...")
+                    elif isinstance(item, dict):
+                        # Handle structured content
+                        item_text = str(item.get('text', item.get('title', str(item))))
+                        if any(word in item_text.lower() for word in query_lower.split() if len(word) > 2):
+                            matches.append(f"• {item_text[:300]}...")
+            elif isinstance(value, dict):
+                # Handle nested dictionary content
+                nested_matches = self._search_category_content(query_lower, value)
+                matches.extend(nested_matches)
+        
+        return matches
 
 
 # Utility functions for standalone usage
