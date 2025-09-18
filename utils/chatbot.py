@@ -60,6 +60,16 @@ class JEPCOChatbot:
         
         print(f"🔍 Searching for: {query} (Language: {language})")
         
+        # Check if this is a calculation/pricing query
+        if self._is_calculation_query(query):
+            try:
+                calculation_result = self._handle_calculation_query(query, language)
+                if calculation_result:
+                    print("✅ Using calculation with live pricing data")
+                    return calculation_result
+            except Exception as e:
+                print(f"⚠️ Calculation failed: {str(e)}")
+        
         # First, try real-time web search
         try:
             web_results = search_jepco_website(query, language)
@@ -144,6 +154,130 @@ class JEPCOChatbot:
             return f"📋 Available information:\n\n{static_content}\n\n⚠️ For the most current information, please contact JEPCO at 116 or visit www.jepco.com.jo"
         else:
             return "Please contact JEPCO customer service at 116 for detailed assistance, or visit www.jepco.com.jo for current information."
+    
+    def _is_calculation_query(self, query: str) -> bool:
+        """Check if the query is asking for cost calculation"""
+        
+        calculation_keywords = [
+            'احسب', 'calculate', 'حساب', 'كم', 'how much', 'cost', 'تكلفة', 
+            'فاتورة', 'bill', 'كيلو واط', 'kwh', 'سعر', 'price'
+        ]
+        
+        query_lower = query.lower()
+        return any(keyword in query_lower for keyword in calculation_keywords)
+    
+    def _handle_calculation_query(self, query: str, language: str) -> str:
+        """Handle calculation queries with live pricing data"""
+        
+        print("🧮 Processing calculation query...")
+        
+        # Extract kWh value from query
+        import re
+        numbers = re.findall(r'\d+(?:\.\d+)?', query)
+        
+        if not numbers:
+            return None
+        
+        try:
+            # Get the consumption value (assuming first number is kWh)
+            daily_kwh = float(numbers[0])
+            print(f"📊 Extracted consumption: {daily_kwh} kWh daily")
+            
+            # Get live tariff information
+            tariff_info = self.web_searcher.get_electricity_tariffs(language)
+            
+            # Calculate costs
+            calculation = self.web_searcher.calculate_electricity_cost(daily_kwh, tariff_info)
+            
+            # Format response based on language
+            if language in ['arabic', 'jordanian']:
+                return self._format_calculation_arabic(calculation, tariff_info)
+            else:
+                return self._format_calculation_english(calculation, tariff_info)
+                
+        except Exception as e:
+            print(f"❌ Calculation error: {str(e)}")
+            return None
+    
+    def _format_calculation_arabic(self, calculation: Dict, tariff_info: Dict) -> str:
+        """Format calculation results in Arabic"""
+        
+        daily_kwh = calculation['daily_kwh']
+        monthly_kwh = calculation['monthly_kwh']
+        costs = calculation['estimated_costs']
+        
+        if not costs:
+            return f"🌐 معلومات حية من موقع جيبكو:\n\nلحساب تكلفة استهلاك {daily_kwh} كيلو واط يوميًا، أحتاج للوصول إلى جدول التعرفة الحالي. يرجى الاتصال بجيبكو على 116 للحصول على التعرفة الدقيقة."
+        
+        result = f"🧮 حساب فاتورة الكهرباء - معلومات من موقع جيبكو:\n\n"
+        result += f"📊 **الاستهلاك:**\n"
+        result += f"• يوميًا: {daily_kwh} كيلو واط ساعة\n"
+        result += f"• شهريًا: {monthly_kwh} كيلو واط ساعة\n\n"
+        
+        if 'daily' in costs and costs['daily'] > 0:
+            result += f"💰 **التكلفة المقدرة:**\n"
+            result += f"• يوميًا: {costs['daily']:.3f} دينار أردني\n"
+            result += f"• شهريًا: {costs['monthly']:.2f} دينار أردني\n"
+            result += f"• سنويًا: {costs['yearly']:.2f} دينار أردني\n\n"
+            
+            if 'rate_used' in costs:
+                result += f"📋 **السعر المستخدم:** {costs['rate_used']:.3f} دينار/كيلو واط ساعة\n\n"
+        
+        if calculation['calculation_method'] == 'estimated':
+            result += f"⚠️ **ملاحظة:** هذه أسعار تقديرية. للحصول على التعرفة الدقيقة والحالية:\n"
+            result += f"• اتصل بجيبكو على الرقم 116\n"
+            result += f"• زر الموقع الرسمي www.jepco.com.jo\n\n"
+        
+        # Add tariff information if found
+        if tariff_info.get('tariffs'):
+            result += f"📈 **معلومات التعرفة من الموقع:**\n"
+            for i, tariff in enumerate(tariff_info['tariffs'][:3]):
+                result += f"• {tariff.get('additional_info', 'معلومات تعرفة')}\n"
+        
+        result += f"\n🔍 **المصدر:** البحث المباشر في موقع جيبكو الرسمي\n"
+        result += f"⏰ **وقت البحث:** {calculation['timestamp']}"
+        
+        return result
+    
+    def _format_calculation_english(self, calculation: Dict, tariff_info: Dict) -> str:
+        """Format calculation results in English"""
+        
+        daily_kwh = calculation['daily_kwh']
+        monthly_kwh = calculation['monthly_kwh']
+        costs = calculation['estimated_costs']
+        
+        if not costs:
+            return f"🌐 Live information from JEPCO website:\n\nTo calculate the cost for {daily_kwh} kWh daily consumption, I need access to the current tariff schedule. Please contact JEPCO at 116 for exact current rates."
+        
+        result = f"🧮 Electricity Bill Calculation - Live JEPCO Data:\n\n"
+        result += f"📊 **Consumption:**\n"
+        result += f"• Daily: {daily_kwh} kWh\n"
+        result += f"• Monthly: {monthly_kwh} kWh\n\n"
+        
+        if 'daily' in costs and costs['daily'] > 0:
+            result += f"💰 **Estimated Costs:**\n"
+            result += f"• Daily: {costs['daily']:.3f} JOD\n"
+            result += f"• Monthly: {costs['monthly']:.2f} JOD\n"
+            result += f"• Yearly: {costs['yearly']:.2f} JOD\n\n"
+            
+            if 'rate_used' in costs:
+                result += f"📋 **Rate Used:** {costs['rate_used']:.3f} JOD/kWh\n\n"
+        
+        if calculation['calculation_method'] == 'estimated':
+            result += f"⚠️ **Note:** These are estimated rates. For exact current tariffs:\n"
+            result += f"• Call JEPCO at 116\n"
+            result += f"• Visit www.jepco.com.jo\n\n"
+        
+        # Add tariff information if found
+        if tariff_info.get('tariffs'):
+            result += f"📈 **Tariff Information from Website:**\n"
+            for i, tariff in enumerate(tariff_info['tariffs'][:3]):
+                result += f"• {tariff.get('additional_info', 'Tariff information')}\n"
+        
+        result += f"\n🔍 **Source:** Live search of official JEPCO website\n"
+        result += f"⏰ **Search Time:** {calculation['timestamp']}"
+        
+        return result
     
     def get_gpt_response(self, user_message: str, language: str = None, chat_history: List = None) -> str:
         """
