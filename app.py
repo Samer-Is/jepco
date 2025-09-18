@@ -16,7 +16,7 @@ from utils.languages import (
 )
 
 # Load environment variables
-load_dotenv()
+load_dotenv(override=True)  # Force override system environment variables
 
 
 def initialize_session_state():

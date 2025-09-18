@@ -7,7 +7,12 @@ import openai
 import json
 import os
 from typing import Dict, List, Optional
+from dotenv import load_dotenv
 from .languages import get_system_prompt, detect_language
+from .web_search import search_jepco_website, JEPCOWebSearcher
+
+# Force load environment variables with override
+load_dotenv(override=True)
 
 
 class JEPCOChatbot:
@@ -22,11 +27,13 @@ class JEPCOChatbot:
             raise ValueError("OPENAI_API_KEY environment variable is required")
         
         # Initialize OpenAI client
-        openai.api_key = api_key
         self.client = openai.OpenAI(api_key=api_key)
         
         # Load JEPCO content
         self.jepco_content = self.load_jepco_content()
+        
+        # Initialize web searcher for real-time information
+        self.web_searcher = JEPCOWebSearcher()
         
         print("✅ JEPCO Chatbot initialized successfully")
     
@@ -47,12 +54,26 @@ class JEPCOChatbot:
     
     def find_relevant_content(self, query: str, language: str = 'english') -> str:
         """
-        Search through jepco_content.json for relevant information
+        Search for relevant information using real-time web search + static content
         Return: Most relevant content snippets
         """
         
+        print(f"🔍 Searching for: {query} (Language: {language})")
+        
+        # First, try real-time web search
+        try:
+            web_results = search_jepco_website(query, language)
+            if web_results and "Unable to search website" not in web_results and "No current information found" not in web_results:
+                print("✅ Using real-time web search results")
+                return f"🌐 Current information from JEPCO website:\n\n{web_results}"
+        except Exception as e:
+            print(f"⚠️ Web search failed: {str(e)}")
+        
+        # Fallback to static content if web search fails
+        print("📁 Using static content as fallback")
+        
         if not self.jepco_content:
-            return "No JEPCO content available. Please contact JEPCO customer service directly."
+            return "Please contact JEPCO customer service directly at 116 for the most current information."
         
         # Determine which language content to search
         content_lang = 'arabic' if language in ['arabic', 'jordanian'] else 'english'
@@ -61,7 +82,7 @@ class JEPCOChatbot:
             content_lang = 'english' if 'english' in self.jepco_content else 'arabic'
         
         if content_lang not in self.jepco_content:
-            return "No JEPCO content available. Please contact JEPCO customer service directly."
+            return "Please contact JEPCO customer service directly at 116 for the most current information."
         
         lang_content = self.jepco_content[content_lang]
         
@@ -103,7 +124,7 @@ class JEPCOChatbot:
             if mapped_category in lang_content:
                 items = lang_content[mapped_category]
                 if isinstance(items, list):
-                    for item in items[:3]:  # Limit to 3 items per category
+                    for item in items[:2]:  # Limit to 2 items per category
                         if isinstance(item, dict) and 'text' in item:
                             relevant_content.append(f"[{category.title()}] {item['text']}")
                         elif isinstance(item, str):
@@ -117,11 +138,12 @@ class JEPCOChatbot:
                     if isinstance(item, dict) and 'text' in item:
                         relevant_content.append(f"[General] {item['text']}")
         
-        # Combine relevant content
+        # Combine relevant content with disclaimer
         if relevant_content:
-            return "\n\n".join(relevant_content[:5])  # Limit total content
+            static_content = "\n\n".join(relevant_content[:3])  # Limit total content
+            return f"📋 Available information:\n\n{static_content}\n\n⚠️ For the most current information, please contact JEPCO at 116 or visit www.jepco.com.jo"
         else:
-            return "Limited information available. Please contact JEPCO customer service for detailed assistance."
+            return "Please contact JEPCO customer service at 116 for detailed assistance, or visit www.jepco.com.jo for current information."
     
     def get_gpt_response(self, user_message: str, language: str = None, chat_history: List = None) -> str:
         """
@@ -182,9 +204,9 @@ Instructions:
                 messages=messages,
                 max_tokens=500,
                 temperature=0.7,
-                top_p=1,
-                frequency_penalty=0,
-                presence_penalty=0
+                top_p=1.0,
+                frequency_penalty=0.0,
+                presence_penalty=0.0
             )
             
             # Extract response
