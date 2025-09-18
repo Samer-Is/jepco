@@ -1,0 +1,146 @@
+{
+  "arabic": {
+    "customer_services": [
+      {
+        "text": "خدمة العملاء",
+        "link": "javascript:void(0);",
+        "type": "navigation"
+      },
+      {
+        "text": "الخدمات الالكترونية",
+        "link": "javascript:void(0);",
+        "type": "navigation"
+      },
+      {
+        "text": "خدمة العملاء",
+        "link": "javascript:void(0);",
+        "type": "navigation"
+      },
+      {
+        "text": "الخدمات الالكترونية",
+        "link": "javascript:void(0);",
+        "type": "navigation"
+      },
+      {
+        "text": "فهرس  الخدمات",
+        "link": "/ar/Home/ServiceStepPage",
+        "type": "navigation"
+      },
+      {
+        "text": "الخدمات الالكترونية تقديم الخدمات الفضلى المستدامة بما يحقق رضا كافة المشتركين تسعى شركة الكهرباء الأردنية المساهمة العامة المحدودة لتبقى الأولى في موثوقية تقديم خدمات توزيع الكهرباء في الأردن، والشركة الريادية في استخدام أحدث وسائل التكنولوجيا الآمنة ونقل المعرفة في أداء الخدمة بالأردن والوطن العربي. الرقم المجاني الموحد 116",
+        "type": "content_section"
+      },
+      {
+        "text": "شركة الكهرباء الأردنية (جيبكو) تقدم خدمات الكهرباء لجميع أنحاء المملكة الأردنية الهاشمية. نحن ملتزمون بتوفير خدمة كهرباء موثوقة وعالية الجودة لعملائنا الكرام.",
+        "type": "general_service"
+      },
+      {
+        "text": "خدمات العملاء تشمل: استعلام عن الفواتير، تسديد الفواتير، طلب توصيل جديد، الإبلاغ عن الأعطال، نقل الاشتراك، إلغاء الاشتراك.",
+        "type": "service_list"
+      }
+    ],
+    "billing_procedures": [
+      {
+        "text": "يمكن تسديد فواتير الكهرباء من خلال: البنوك المعتمدة، مكاتب البريد، مراكز الدفع الإلكتروني، الموقع الإلكتروني لجيبكو، تطبيق الهاتف المحمول.",
+        "type": "payment_methods"
+      },
+      {
+        "text": "الفواتير تصدر شهرياً ويجب تسديدها خلال موعد الاستحقاق المحدد لتجنب فصل الخدمة.",
+        "type": "billing_schedule"
+      }
+    ],
+    "contact_information": [
+      {
+        "text": "التواصل و التوعية",
+        "link": "/ar/Home/%d9%85%d8%b4%d8%b1%d9%88%d8%b9-%d8%a7%d9%84%d8%aa%d9%88%d8%a7%d8%b5%d9%84-%d9%88-%d8%a7%d9%84%d8%aa%d9%88%d8%b9%d9%8a%d8%a9",
+        "type": "navigation"
+      },
+      {
+        "text": "وسائل التواصل",
+        "link": "/ar/Home/%d9%88%d8%b3%d8%a7%d8%a6%d9%84-%d8%a7%d9%84%d8%aa%d9%88%d8%a7%d8%b5%d9%84",
+        "type": "navigation"
+      },
+      {
+        "text": "نبذة عنا الرؤية والرسالة تاريخ الشركة الهيكل التنظيمي Our Mission خدمة العملاء فهرس الخدمات سدد فاتورتك خدمة اشتراك جديد شروط و أحكام الاستخدام الخدمات الالكترونية الاستعلام عن الفواتير تقديم شكوى الاستعلام عن طلب Privacy & Policy روابط مهمة موقع رئاسة الوزراء وزارة الطاقة والثروة المعدنية هيئة تنظيم قطاع الطاقة والمعادن وزارة النقل معرض الفيديو تحميل التطبيق الشروط والاحكام أسئلة شائعة جيبكو الرقمية اتصل بنا تابعونا على",
+        "type": "footer"
+      },
+      {
+        "text": "للاستفسارات والشكاوي: الخط الساخن 117، أو زيارة أقرب مكتب خدمة عملاء في منطقتكم.",
+        "type": "contact_main"
+      },
+      {
+        "text": "مواعيد العمل: من الأحد إلى الخميس من الساعة 8:00 صباحاً حتى 3:00 مساءً.",
+        "type": "working_hours"
+      }
+    ],
+    "emergency_procedures": [
+      {
+        "text": "في حالات الطوارئ والأعطال العامة، يرجى الاتصال على الرقم 117 أو الإبلاغ عبر الموقع الإلكتروني.",
+        "type": "emergency_contact"
+      }
+    ],
+    "service_areas": [
+      {
+        "text": "جيبكو تخدم جميع محافظات المملكة الأردنية الهاشمية من خلال شبكة واسعة من مكاتب الخدمة والمراكز الفرعية.",
+        "type": "coverage_area"
+      }
+    ],
+    "general_info": [],
+    "source_url": "https://www.jepco.com.jo/ar/Home"
+  },
+  "english": {
+    "customer_services": [
+      {
+        "text": "الخدمات الالكترونية تقديم الخدمات الفضلى المستدامة بما يحقق رضا كافة المشتركين تسعى شركة الكهرباء الأردنية المساهمة العامة المحدودة لتبقى الأولى في موثوقية تقديم خدمات توزيع الكهرباء في الأردن، والشركة الريادية في استخدام أحدث وسائل التكنولوجيا الآمنة ونقل المعرفة في أداء الخدمة بالأردن والوطن العربي. الرقم المجاني الموحد 116",
+        "type": "content_section"
+      },
+      {
+        "text": "Jordan Electric Power Company (JEPCO) provides electricity services throughout the Hashemite Kingdom of Jordan. We are committed to providing reliable and high-quality electricity service to our valued customers.",
+        "type": "general_service"
+      },
+      {
+        "text": "Customer services include: Bill inquiry, Bill payment, New connection request, Fault reporting, Subscription transfer, Subscription cancellation.",
+        "type": "service_list"
+      }
+    ],
+    "billing_procedures": [
+      {
+        "text": "Electricity bills can be paid through: Approved banks, Post offices, Electronic payment centers, JEPCO website, Mobile application.",
+        "type": "payment_methods"
+      },
+      {
+        "text": "Bills are issued monthly and must be paid by the specified due date to avoid service disconnection.",
+        "type": "billing_schedule"
+      }
+    ],
+    "contact_information": [
+      {
+        "text": "معرض الفيديو تحميل التطبيق تابعونا على",
+        "type": "footer"
+      },
+      {
+        "text": "For inquiries and complaints: Hotline 117, or visit the nearest customer service office in your area.",
+        "type": "contact_main"
+      },
+      {
+        "text": "Working hours: Sunday to Thursday from 8:00 AM to 3:00 PM.",
+        "type": "working_hours"
+      }
+    ],
+    "emergency_procedures": [
+      {
+        "text": "In case of emergencies and general faults, please call 117 or report through the website.",
+        "type": "emergency_contact"
+      }
+    ],
+    "service_areas": [
+      {
+        "text": "JEPCO serves all governorates of the Hashemite Kingdom of Jordan through an extensive network of service offices and branch centers.",
+        "type": "coverage_area"
+      }
+    ],
+    "general_info": [],
+    "source_url": "https://www.jepco.com.jo/en"
+  },
+  "last_updated": "2025-09-18 15:16:25"
+}
